@@ -1,15 +1,16 @@
+#' @export
 puppet = R6::R6Class(
   "puppet",
   public = list(
     initialize = function(url = NULL, cookies = NULL) {
-      m = Chromote$new(
-        browser = Chrome$new(
-          path = "/Applications/Chromium.app/Contents/MacOS/Chromium"
-        )
-      )
-      private$session <- m$new_session()
+      #m = chromote::Chromote$new(
+      #  browser = chromote::Chrome$new(
+      #    path = "/Applications/Chromium.app/Contents/MacOS/Chromium"
+      #  )
+      #)
+      #private$session <- m$new_session()
 
-      #private$session = chromote::ChromoteSession$new()
+      private$session = chromote::ChromoteSession$new()
 
       if(!is.null(cookies))
         self$set_cookies(cookies)
@@ -73,7 +74,7 @@ puppet = R6::R6Class(
       start = Sys.time()
 
       repeat {
-        id = private$get_node(selector)
+        id = purrr::possibly(private$get_node, 0)(selector)
         if (id != 0)
           return(id)
 
@@ -87,10 +88,15 @@ puppet = R6::R6Class(
     attach_file = function(selector, file) {
       stopifnot(file.exists(file))
       id = private$get_node(selector)
-      print(id)
-      file = path.expand(file)
+
+      file = fs::path_abs(file)
+      file = fs::path_expand(file)
 
       private$session$DOM$setFileInputFiles(list(file), id)
+    },
+
+    close = function() {
+      private$session$close()
     }
   ),
   private = list(
