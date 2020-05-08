@@ -17,46 +17,74 @@ puppet = R6::R6Class(
 
       if (!is.null(url))
         self$goto(url)
+
+      invisible(self)
     },
     goto = function(url) {
       private$session$Page$navigate(url)
+      invisible(self)
     },
     set_cookies = function(cookies) {
       private$session$Network$setCookies(cookies = cookies)
+      invisible(self)
     },
     get_cookies = function() {
       private$session$Network$getCookies()$cookies
     },
     view = function() {
       private$session$view()
+      invisible(self)
     },
 
     wait_on_load = function() {
       private$session$Page$loadEventFired()
+      invisible(self)
     },
 
-    get_element = function(selector) {
+    get_element = function(selector, as_xml2 = TRUE) {
       id = private$get_node(selector)
-      private$get_node_html(id)
+      html = private$get_node_html(id)
+
+      if (as_xml2)
+        xml2::read_html(html)
+      else
+        html
     },
 
-    click = function(selector) {
+    get_elements = function(selector, as_xml2 = TRUE) {
+      ids = private$get_all_nodes(selector)
+      html = purrr::map(ids, private$get_node_html)
+
+      if (as_xml2)
+        xml2:::xml_nodeset( purrr::map(html, xml2::read_html) )
+      else
+        html
+    },
+
+    click = function(selector, set_focus=TRUE) {
       id = private$get_node(selector)
       xy = private$get_node_center(id)
+
+      if (set_focus)
+        private$session$DOM$focus(id)
 
       private$mouse_down(x = xy[1], y = xy[2])
       private$mouse_up(x = xy[1], y = xy[2])
 
-      invisible()
+      invisible(self)
     },
 
     focus = function(selector) {
       id = private$get_node(selector)
       private$session$DOM$focus(id)
+
+      invisible(self)
     },
 
     set_debug_msgs = function(flag) {
       private$session$parent$debug_messages(flag)
+
+      invisible(self)
     },
 
     type = function(selector = NULL, text) {
@@ -68,6 +96,8 @@ puppet = R6::R6Class(
         private$press(key)
         Sys.sleep(0.1)
       }
+
+      invisible(self)
     },
 
     wait_for_selector = function(selector, timeout = 30, polling = 0.1) {
@@ -76,13 +106,15 @@ puppet = R6::R6Class(
       repeat {
         id = purrr::possibly(private$get_node, 0)(selector)
         if (id != 0)
-          return(id)
+          break
 
         if (Sys.time() - start > timeout)
           stop("Timeout exceeded while waiting for selector")
 
         Sys.sleep(polling)
       }
+
+      invisible(self)
     },
 
     attach_file = function(selector, file) {
@@ -93,10 +125,14 @@ puppet = R6::R6Class(
       file = fs::path_expand(file)
 
       private$session$DOM$setFileInputFiles(list(file), id)
+
+      invisible(self)
     },
 
     close = function() {
       private$session$close()
+
+      invisible()
     }
   ),
   private = list(
@@ -112,7 +148,7 @@ puppet = R6::R6Class(
     },
 
     get_all_nodes = function(selector) {
-      doc = get_document()
+      doc = private$get_document()
       private$session$DOM$querySelectorAll(doc$root$nodeId, selector)$nodeIds
     },
 
