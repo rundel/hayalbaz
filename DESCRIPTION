@@ -17,6 +17,9 @@ RoxygenNote: 7.1.0
 Imports: 
     R6,
     chromote,
-    fs
+    fs,
+    xml2
 URL: https://github.com/rundel/hayalbaz
 BugReports: https://github.com/rundel/hayalbaz/issues
+Suggests: 
+    rvest
