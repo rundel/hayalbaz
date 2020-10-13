@@ -61,14 +61,26 @@ puppet = R6::R6Class(
         html
     },
 
-    click = function(selector, set_focus=TRUE) {
+    click = function(selector, set_focus=TRUE, scroll=TRUE) {
+
+      #if (set_focus)
+      #  private$session$DOM$focus(id)
+
+      if (scroll) {
+        # Not currently supported by Chromote
+        #private$session$DOM$scrollIntoViewIfNeeded(id)
+
+        # Based on https://github.com/cyrus-and/chrome-remote-interface/issues/180
+        private$session$Runtime$evaluate(
+          paste0("document.querySelector('", selector ,"').scrollIntoView()")
+        )
+      }
+
       id = private$get_node(selector)
       xy = private$get_node_center(id)
 
-      if (set_focus)
-        private$session$DOM$focus(id)
-
       private$mouse_down(x = xy[1], y = xy[2])
+      Sys.sleep(0.5)
       private$mouse_up(x = xy[1], y = xy[2])
 
       invisible(self)
