@@ -112,6 +112,16 @@ puppet = R6::R6Class(
       invisible(self)
     },
 
+    download_enable = function(path) {
+      path = normalizePath(path)
+      stopifnot(dir.exists(path))
+
+      private$download_path = path
+      private$session$Browser$setDownloadBehavior("allow", downloadPath = path)
+
+      invisible(self)
+    },
+
     wait_for_selector = function(selector, timeout = 30, polling = 0.1) {
       start = Sys.time()
 
@@ -149,6 +159,7 @@ puppet = R6::R6Class(
   ),
   private = list(
     session = NULL,
+    download_path = NULL,
 
     get_document = function() {
       private$session$DOM$getDocument()
