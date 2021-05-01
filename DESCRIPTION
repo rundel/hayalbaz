@@ -18,7 +18,8 @@ Imports:
     R6,
     chromote,
     fs,
-    xml2
+    xml2,
+    progress
 URL: https://github.com/rundel/hayalbaz
 BugReports: https://github.com/rundel/hayalbaz/issues
 Suggests: 

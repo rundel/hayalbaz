@@ -112,12 +112,14 @@ puppet = R6::R6Class(
       invisible(self)
     },
 
-    download_enable = function(path) {
+    download_enable = function(path, report = TRUE, progress = report) {
       path = normalizePath(path)
       stopifnot(dir.exists(path))
 
       private$download_path = path
       private$session$Browser$setDownloadBehavior("allow", downloadPath = path)
+
+      private$watch_download(report = report, progress = progress)
 
       invisible(self)
     },
@@ -160,6 +162,72 @@ puppet = R6::R6Class(
   private = list(
     session = NULL,
     download_path = NULL,
+    download_pb = NULL,
+
+    watch_download = function(start = TRUE, report = TRUE, progress = report) {
+      if (!start) {
+        private$session$Page$downloadWillBegin(callback_ = NULL, wait_ = FALSE)
+        private$session$Page$downloadProgress(callback_ = NULL, wait_ = FALSE)
+
+        return()
+      }
+
+      f = function(private) {
+        function(l) {
+          if (report) {
+            message(
+              "Downloading ", l$suggestedFilename,
+              " from ", l$url,
+              " to ", private$download_path,
+              "."
+            )
+          }
+
+          private$download_pb = NULL
+        }
+      }
+
+      private$session$Page$downloadWillBegin(
+        callback_ = f(private),
+        wait_ = FALSE
+      )
+
+      g = function(private) {
+        function(l) {
+          if (!progress)
+            return()
+
+          if (is.null(private$download_pb)) {
+            private$download_pb = progress::progress_bar$new(
+              total = l$totalBytes,
+              format = "[:bar :percent] downloading @ :rate (:eta)"
+            )
+          }
+          if (!private$download_pb$finished)
+            private$download_pb$update(l$receivedBytes/ l$totalBytes)
+
+          if (l$state == "completed") {
+            private$download_pb$terminate()
+            message("Download completed.")
+
+            private$session$Page$downloadProgress(callback_ = NULL, wait_ = FALSE)
+
+            return()
+          } else if (l$state == "canceled") {
+            private$download_pb$terminate()
+            message("Download canceled.")
+            return()
+          }
+        }
+      }
+
+      private$session$Page$downloadProgress(
+        callback_ = g(private),
+        wait_ = FALSE
+      )
+
+      invisible(self)
+    },
 
     get_document = function() {
       private$session$DOM$getDocument()
