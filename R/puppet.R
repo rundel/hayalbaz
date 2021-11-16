@@ -20,6 +20,14 @@ puppet = R6::R6Class(
 
       invisible(self)
     },
+    get_source = function() {
+      self$content()
+    },
+    content = function() {
+      private$session$Runtime$evaluate(
+        paste0("document.documentElement.outerHTML")
+      )$result$value
+    },
     goto = function(url) {
       private$session$Page$navigate(url)
       invisible(self)
