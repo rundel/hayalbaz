@@ -23,6 +23,17 @@ puppet = R6::R6Class(
     get_source = function() {
       self$content()
     },
+    screenshot = function(
+      filename = "screenshot.png", selector = "html", cliprect = NULL,
+      region = c("content", "padding", "border", "margin"), expand = NULL,
+      scale = 1, show = FALSE, delay = 0.5, wait_ = TRUE
+    ) {
+      private$session$screenshot(
+        filename = filename, selector = selector, cliprect = cliprect,
+        region = region, expand = expand, scale = scale, show = show,
+        delay = delay, wait_= wait_
+      )
+    },
     content = function() {
       private$session$Runtime$evaluate(
         paste0("document.documentElement.outerHTML")

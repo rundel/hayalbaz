@@ -19,7 +19,8 @@ Imports:
     chromote,
     fs,
     xml2,
-    progress
+    progress,
+    showimage
 URL: https://github.com/rundel/hayalbaz
 BugReports: https://github.com/rundel/hayalbaz/issues
 Suggests: 
