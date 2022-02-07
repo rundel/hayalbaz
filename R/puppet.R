@@ -39,6 +39,11 @@ puppet = R6::R6Class(
         paste0("document.documentElement.outerHTML")
       )$result$value
     },
+    get_js_object = function(name) {
+      private$session$Runtime$evaluate(
+        name, returnByValue = TRUE
+      )$result$value
+    },
     goto = function(url) {
       private$session$Page$navigate(url)
       invisible(self)
@@ -80,7 +85,9 @@ puppet = R6::R6Class(
         html
     },
 
-    click = function(selector, set_focus=TRUE, scroll=TRUE) {
+    click = function(selector, set_focus=TRUE, scroll=TRUE, wait_for_selector=TRUE) {
+      if (wait_for_selector)
+        self$wait_for_selector(selector)
 
       #if (set_focus)
       #  private$session$DOM$focus(id)
