@@ -39,6 +39,23 @@ puppet = R6::R6Class(
         paste0("document.documentElement.outerHTML")
       )$result$value
     },
+    set_value = function(selector, value) {
+      doc = private$get_document()
+      ids = private$session$DOM$querySelectorAll(doc$root$nodeId, selector)$nodeIds
+
+      if (length(ids) > 1)
+        warning("Multiple nodes matched the given selector, only the first will be altered.", call. = FALSE)
+      else if (length(ids) == 0)
+        stop("Selector did not match any nodes in the current document.", call. = FALSE)
+
+
+      private$session$Runtime$evaluate(
+        glue::glue('document.querySelector("{selector}").value = "{value}"')
+      )
+
+      invisible(self)
+    },
+
     get_js_object = function(name) {
       private$session$Runtime$evaluate(
         name, returnByValue = TRUE
