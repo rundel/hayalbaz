@@ -1,3 +1,5 @@
+fake_chrome = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
+
 #' @export
 puppet = R6::R6Class(
   "puppet",
@@ -23,6 +25,13 @@ puppet = R6::R6Class(
     get_source = function() {
       self$content()
     },
+
+    set_user_agent = function(user_agent) {
+      private$session$Network$setUserAgentOverride(user_agent)
+
+      invisible(self)
+    },
+
     screenshot = function(
       filename = "screenshot.png", selector = "html", cliprect = NULL,
       region = c("content", "padding", "border", "margin"), expand = NULL,
