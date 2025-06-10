@@ -43,6 +43,11 @@ puppet = R6::R6Class(
         delay = delay, wait_= wait_
       )
     },
+    evaluate = function(javascript) {
+      private$session$Runtime$evaluate(
+        javascript
+      )$result$value
+    },
     content = function() {
       private$session$Runtime$evaluate(
         paste0("document.documentElement.outerHTML")
